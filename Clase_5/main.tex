@@ -1,0 +1,1555 @@
+% =====================================================================
+%  Analítica de Datos — Sesión 05
+%  Universidad Cooperativa de Colombia — Ingeniería de Software
+%  Autor: Luis Miguel Gómez Meneses
+%  Estructura: CONTINUIDAD -> TEORÍA -> LABORATORIO (4 h)
+%  Compilar con pdfLaTeX en Overleaf
+% =====================================================================
+
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{upquote}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\usepackage{graphicx}
+\setbeamertemplate{navigation symbols}{}
+
+% ------------------------------ Paleta -------------------------------
+
+\definecolor{cPrim}{HTML}{14484F}
+\definecolor{cAcc}{HTML}{C2571A}
+\definecolor{cInk}{HTML}{1C2B2D}
+\definecolor{cSoft}{HTML}{EDF2F2}
+\definecolor{cGray}{HTML}{6B7A7C}
+\definecolor{cCode}{HTML}{F6F4EF}
+\definecolor{cOut}{HTML}{F2F2F2}
+
+\setbeamercolor{normal text}{fg=cInk}
+\setbeamercolor{structure}{fg=cPrim}
+\setbeamercolor{frametitle}{fg=cPrim,bg=white}
+\setbeamercolor{itemize item}{fg=cAcc}
+\setbeamercolor{itemize subitem}{fg=cGray}
+\setbeamercolor{block title}{fg=white,bg=cPrim}
+\setbeamercolor{block body}{fg=cInk,bg=cSoft}
+\setbeamercolor{block title alerted}{fg=white,bg=cAcc}
+\setbeamercolor{block body alerted}{fg=cInk,bg=cAcc!10}
+\setbeamercolor{block title example}{fg=white,bg=cGray}
+\setbeamercolor{block body example}{fg=cInk,bg=cGray!12}
+
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+\setbeamerfont{block body}{size=\small}
+
+\setbeamertemplate{itemize item}
+  {\raisebox{0.15ex}{\rule{1.1ex}{1.1ex}}}
+
+\setbeamertemplate{itemize subitem}{\textendash}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% ------------------- Modo laboratorio (marca visual) -----------------
+
+\newcommand{\ruleclr}{cAcc}
+\newcommand{\marcaframe}{}
+
+\newcommand{\modolab}[1]{%
+  \setbeamercolor{frametitle}{fg=cAcc}%
+  \setbeamercolor{background canvas}{bg=cAcc!8}%
+  \renewcommand{\ruleclr}{cPrim}%
+  \renewcommand{\marcaframe}{#1}%
+}
+
+\newcommand{\modoteoria}{%
+  \setbeamercolor{frametitle}{fg=cPrim}%
+  \setbeamercolor{background canvas}{bg=white}%
+  \renewcommand{\ruleclr}{cAcc}%
+  \renewcommand{\marcaframe}{}%
+}
+
+% --------------------------- Título de marco --------------------------
+
+\setbeamertemplate{frametitle}{%
+  \vspace*{0.55em}%
+  \begin{beamercolorbox}
+    [wd=\paperwidth,leftskip=0.9cm,rightskip=0.9cm]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\par
+    \vspace{0.25em}%
+    {\color{\ruleclr}\rule{2.1cm}{1.2pt}}\hfill
+    {\scriptsize\bfseries\color{cGray}\marcaframe}\par
+  \end{beamercolorbox}%
+  \vspace{0.2em}%
+}
+
+% ------------------------------ Pie ----------------------------------
+
+\setbeamertemplate{footline}{%
+  \hbox{%
+  \begin{beamercolorbox}
+    [wd=\paperwidth,ht=2.4ex,dp=1.4ex,
+     leftskip=0.9cm,rightskip=0.9cm]{}%
+    {\tiny\color{cGray}\insertsection\hfill\insertframenumber}%
+  \end{beamercolorbox}}%
+}
+
+% ------------------------------ TikZ ---------------------------------
+
+\tikzset{
+  nodo/.style={
+    rounded corners=2pt,
+    draw=cPrim!55,
+    fill=cSoft,
+    align=center,
+    inner sep=3.5pt,
+    font=\scriptsize,
+    text=cInk,
+    minimum height=0.85cm
+  },
+  nodoA/.style={
+    nodo,
+    draw=cAcc!70,
+    fill=cAcc!12
+  },
+  nodoD/.style={
+    nodo,
+    draw=cGray!60,
+    fill=white
+  },
+  flecha/.style={
+    -{Stealth[length=1.9mm]},
+    draw=cPrim!75,
+    line width=0.7pt
+  },
+  flechaA/.style={
+    -{Stealth[length=1.9mm]},
+    draw=cAcc!85,
+    line width=0.7pt
+  },
+  etiq/.style={
+    font=\scriptsize\itshape,
+    text=cGray
+  }
+}
+
+% ---------------------------- Listings -------------------------------
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{cPrim}\bfseries,
+  stringstyle=\color{cAcc},
+  commentstyle=\color{cGray}\itshape,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=false,
+  numbers=none,
+  frame=leftline,
+  framerule=2pt,
+  rulecolor=\color{cPrim!45},
+  backgroundcolor=\color{cCode},
+  xleftmargin=8pt,
+  framexleftmargin=8pt,
+  framexrightmargin=4pt,
+  aboveskip=5pt,
+  belowskip=5pt,
+  literate=%
+    {á}{{\'a}}1
+    {é}{{\'e}}1
+    {í}{{\'i}}1
+    {ó}{{\'o}}1
+    {ú}{{\'u}}1
+    {Á}{{\'A}}1
+    {É}{{\'E}}1
+    {Í}{{\'I}}1
+    {Ó}{{\'O}}1
+    {Ú}{{\'U}}1
+    {ñ}{{\~n}}1
+    {Ñ}{{\~N}}1
+    {¿}{{?`}}1
+    {¡}{{!`}}1
+}
+
+\lstdefinestyle{salida}{
+  basicstyle=\ttfamily\scriptsize\color{cInk},
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  numbers=none,
+  frame=leftline,
+  framerule=2pt,
+  rulecolor=\color{cGray!45},
+  backgroundcolor=\color{cOut},
+  xleftmargin=8pt,
+  framexleftmargin=8pt,
+  aboveskip=5pt,
+  belowskip=5pt,
+  literate=%
+    {á}{{\'a}}1
+    {é}{{\'e}}1
+    {í}{{\'i}}1
+    {ó}{{\'o}}1
+    {ú}{{\'u}}1
+    {ñ}{{\~n}}1
+}
+
+\lstset{style=py}
+
+% ---------------------------- Utilidades -----------------------------
+
+\newcommand{\kicker}[1]{%
+  {\scriptsize\bfseries\color{cAcc}\MakeUppercase{#1}}%
+  \par\vspace{0.2em}%
+}
+
+\newcommand{\destaca}[1]{%
+  {\color{cPrim}\bfseries #1}%
+}
+
+\newcommand{\pregunta}[1]{%
+  {\color{cAcc}\bfseries #1}%
+}
+
+\newenvironment{cerrado}[1]
+  {\begin{block}{#1}
+   \begin{minipage}{\linewidth}
+   \raggedright}
+  {\end{minipage}
+   \end{block}}
+
+% ---------------------------- Metadatos -------------------------------
+
+\title{Analítica de Datos}
+\author{Luis Miguel Gómez Meneses}
+\institute{Universidad Cooperativa de Colombia}
+\date{}
+
+% =====================================================================
+%  DOCUMENTO
+% =====================================================================
+
+\begin{document}
+
+\setlength{\parskip}{0pt}
+
+% =====================================================================
+\section{Apertura}
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% Diapositiva 1 — Portada
+% ---------------------------------------------------------------------
+
+\begin{frame}[plain]
+
+  \vspace{1.15cm}
+
+  \hspace*{0.7cm}%
+  \begin{minipage}{0.90\textwidth}
+
+    \raggedright
+
+    {\color{cAcc}\rule{2.6cm}{2.2pt}}\par
+
+    \vspace{0.6em}
+
+    {\Large\color{cGray}
+      Analítica de Datos
+    }\par
+
+    \vspace{0.35em}
+
+    {\LARGE\bfseries\color{cPrim}
+      Sesión 05. Regresión lineal simple y múltiple
+    }\par
+
+    \vspace{0.9em}
+
+    {\small\color{cInk}
+      Modelos con una o varias variables predictoras,\\
+      interpretación de coeficientes y evaluación
+    }\par
+
+    \vspace{1.5em}
+
+    {\small\bfseries
+      Luis Miguel Gómez Meneses
+    }\par
+
+    \vspace{0.3em}
+
+    {\footnotesize\color{cGray}
+      Universidad Cooperativa de Colombia\\
+      Ingeniería de Software --- Séptimo semestre
+    }\par
+
+  \end{minipage}
+
+\end{frame}
+
+% ---------------------------------------------------------------------
+% Diapositiva 2 — Cómo trabajaremos hoy
+% ---------------------------------------------------------------------
+
+\begin{frame}{Cómo trabajaremos hoy}
+
+  \vspace{0.1em}
+
+  \begin{center}
+
+  \small
+  \renewcommand{\arraystretch}{1.18}
+
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.9cm}
+                    >{\raggedright\arraybackslash}p{7.2cm}
+                    >{\raggedleft\arraybackslash}p{1.4cm}@{}}
+
+    \toprule
+
+    \textbf{Bloque} &
+    \textbf{Contenido} &
+    \textbf{Tiempo}\\
+
+    \midrule
+
+    Evaluación &
+    Sustentaciones y cierre del primer 20\,\% &
+    60 min\\
+
+    Teoría 1 &
+    Regresión lineal simple: ecuación, predicción y residuos &
+    30 min\\
+
+    \textcolor{cAcc}{\textbf{Lab 13}} &
+    \textcolor{cAcc}{Ajuste e interpretación de un modelo simple} &
+    \textcolor{cAcc}{35 min}\\
+
+    Teoría 2 &
+    Regresión lineal múltiple: predictores y coeficientes &
+    30 min\\
+
+    \textcolor{cAcc}{\textbf{Lab 14}} &
+    \textcolor{cAcc}{Construcción de un modelo múltiple con Python} &
+    \textcolor{cAcc}{45 min}\\
+
+    Evaluación &
+    Comparación de modelos: $R^2$, MAE, MSE y RMSE &
+    25 min\\
+
+    Cierre &
+    Interpretación, conclusiones y actividad final &
+    15 min\\
+
+    \bottomrule
+
+  \end{tabular}
+
+  \end{center}
+
+  \vspace{0.35em}
+
+  \begin{center}
+    \small\color{cGray}
+    De una variable predictora a modelos con múltiples predictores.
+  \end{center}
+
+\end{frame}
+
+% =====================================================================
+\section{De la inferencia a la predicción}
+\modoteoria
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% Diapositiva 3 — De la sesión anterior a esta sesión
+% ---------------------------------------------------------------------
+
+\begin{frame}{De la sesión anterior a esta sesión}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \begin{cerrado}{En la sesión anterior}
+
+        Utilizamos una muestra para estimar un parámetro desconocido
+        de la población:
+
+        \begin{itemize}
+          \item calculamos la media muestral;
+          \item determinamos el error estándar;
+          \item construimos un intervalo de confianza;
+          \item analizamos el efecto del tamaño de la muestra.
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.35em}
+
+      \begin{cerrado}{En esta sesión}
+
+        Utilizaremos una o varias variables para explicar y predecir
+        el comportamiento de una variable respuesta:
+
+        \begin{itemize}
+          \item con un predictor: \destaca{regresión lineal simple};
+          \item con varios predictores: \destaca{regresión lineal múltiple}.
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.3em}
+
+      \begin{center}
+        \pregunta{¿Cómo construimos un modelo que represente la relación
+        entre las variables?}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+% =====================================================================
+\section{Regresión lineal}
+\modoteoria
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% Diapositiva 4 — ¿Qué es la regresión lineal simple?
+% ---------------------------------------------------------------------
+
+\begin{frame}{¿Qué es la regresión lineal simple?}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \kicker{DE LA RELACIÓN A LA PREDICCIÓN}
+
+      \vspace{0.4em}
+
+      La \textbf{regresión lineal simple} es un método estadístico
+      que permite representar la relación lineal entre una variable
+      predictora y una variable respuesta mediante una ecuación.
+
+      \vspace{0.7em}
+
+      En este modelo intervienen:
+
+      \begin{itemize}
+        \item una variable predictora, utilizada para explicar o predecir;
+        \item una variable respuesta, cuyo valor queremos estimar.
+      \end{itemize}
+
+      \vspace{0.6em}
+
+      \begin{cerrado}{Idea clave}
+
+        Se denomina \textbf{simple} porque utiliza una sola variable
+        predictora para estimar el comportamiento de la variable respuesta.
+
+      \end{cerrado}
+
+      \vspace{0.5em}
+
+      \begin{center}
+        \textbf{Un predictor}
+        $\quad\longrightarrow\quad$
+        \textbf{Modelo lineal}
+        $\quad\longrightarrow\quad$
+        \textbf{Valor estimado}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+% ---------------------------------------------------------------------
+% Diapositiva 5 — Variable predictora y variable respuesta
+% ---------------------------------------------------------------------
+
+\begin{frame}{Variable predictora y variable respuesta}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \kicker{VARIABLES CON FUNCIONES DIFERENTES}
+
+      \vspace{0.4em}
+
+      En un modelo de regresión intervienen una variable respuesta
+      y una o varias variables predictoras.
+
+      \vspace{0.6em}
+
+      \begin{columns}[T,onlytextwidth]
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Variable predictora \(X\)}
+
+            Es una variable conocida que utilizamos para explicar
+            o estimar el comportamiento de la variable respuesta.
+
+            \vspace{0.4em}
+
+            También se denomina:
+
+            \begin{itemize}
+              \item variable independiente;
+              \item variable explicativa.
+            \end{itemize}
+
+          \end{cerrado}
+
+        \end{column}
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Variable respuesta \(Y\)}
+
+            Es la variable que queremos explicar o estimar mediante
+            el modelo.
+
+            \vspace{0.4em}
+
+            También se denomina:
+
+            \begin{itemize}
+              \item variable dependiente;
+              \item variable objetivo.
+            \end{itemize}
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.45em}
+
+      \begin{center}
+        \destaca{Regresión simple: una \(X\)}
+        \qquad
+        \destaca{Regresión múltiple: varias \(X\)}
+      \end{center}
+
+      \vspace{0.2em}
+
+      \begin{center}
+        \pregunta{En ambos casos utilizamos los predictores para estimar \(Y\).}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+% ---------------------------------------------------------------------
+% Diapositiva 6 — Un problema de regresión
+% ---------------------------------------------------------------------
+
+\begin{frame}{Un problema de regresión}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \kicker{DE UNA PREGUNTA A DOS VARIABLES}
+
+      \vspace{0.4em}
+
+      Una empresa quiere analizar si la inversión mensual en publicidad
+      puede utilizarse para estimar sus ventas.
+
+      \vspace{0.7em}
+
+      \begin{columns}[T,onlytextwidth]
+
+        \begin{column}{0.46\textwidth}
+
+          \begin{cerrado}{Variable predictora}
+
+            \[
+              X=\text{inversión en publicidad}
+            \]
+
+            Es la información conocida que utilizaremos para realizar
+            la estimación.
+
+          \end{cerrado}
+
+        \end{column}
+
+        \begin{column}{0.46\textwidth}
+
+          \begin{cerrado}{Variable respuesta}
+
+            \[
+              Y=\text{ventas}
+            \]
+
+            Es la variable cuyo valor queremos explicar o predecir.
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.7em}
+
+      \begin{cerrado}{Pregunta de análisis}
+
+        \begin{center}
+          \pregunta{¿Cuánto esperamos vender para una determinada
+          inversión en publicidad?}
+        \end{center}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+% ---------------------------------------------------------------------
+% Diapositiva 7 — El diagrama de dispersión
+% ---------------------------------------------------------------------
+
+\begin{frame}{El diagrama de dispersión}
+
+  \begin{center}
+    \begin{minipage}{0.92\textwidth}
+
+      \kicker{PRIMERO OBSERVAMOS LA RELACIÓN}
+
+      Antes de construir el modelo, representamos cada observación
+      mediante un punto con coordenadas \((X,Y)\).
+
+      \vspace{0.0em}
+
+      \begin{columns}[T,onlytextwidth]
+
+        % -------------------- Gráfica --------------------
+        \begin{column}{0.52\textwidth}
+
+          \begin{center}
+
+          \begin{tikzpicture}[x=0.62cm,y=0.42cm]
+
+            % Cuadrícula
+            \draw[step=1cm,cGray!20,very thin]
+              (0,0) grid (6,5);
+
+            % Eje horizontal
+            \draw[-{Stealth[length=2mm]},line width=0.8pt,cPrim]
+              (0,0) -- (6.4,0)
+              node[right,font=\scriptsize] {Publicidad \(X\)};
+
+            % Eje vertical
+            \draw[-{Stealth[length=2mm]},line width=0.8pt,cPrim]
+              (0,0) -- (0,5.5)
+              node[above,font=\scriptsize] {Ventas \(Y\)};
+
+            % Observaciones
+            \fill[cAcc] (0.6,0.5) circle (2pt);
+            \fill[cAcc] (1.0,0.9) circle (2pt);
+            \fill[cAcc] (1.6,1.2) circle (2pt);
+            \fill[cAcc] (2.0,1.6) circle (2pt);
+            \fill[cAcc] (2.5,1.4) circle (2pt);
+            \fill[cAcc] (3.1,2.5) circle (2pt);
+            \fill[cAcc] (3.6,2.8) circle (2pt);
+            \fill[cAcc] (4.2,3.4) circle (2pt);
+            \fill[cAcc] (4.7,4.0) circle (2pt);
+            \fill[cAcc] (5.3,4.5) circle (2pt);
+            \fill[cAcc] (5.7,4.9) circle (2pt);
+
+          \end{tikzpicture}
+
+          \end{center}
+
+        \end{column}
+
+        % ---------------- Interpretación ----------------
+        \begin{column}{0.44\textwidth}
+
+          \begin{cerrado}{¿Qué observamos?}
+
+            \begin{itemize}
+              \setlength{\itemsep}{0.2em}
+
+              \item Los puntos presentan una tendencia ascendente.
+
+              \item Cuando \(X\) aumenta, \(Y\) tiende a aumentar.
+
+              \item La relación parece aproximadamente lineal.
+
+              \item Los puntos no forman una recta perfecta.
+
+            \end{itemize}
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.15em}
+
+      \begin{center}
+        \pregunta{¿Qué recta representa mejor la tendencia de los datos?}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 8 — La ecuación de regresión lineal simple
+% ---------------------------------------------------------------------
+
+\begin{frame}{La ecuación de regresión lineal simple}
+
+  \begin{center}
+    \begin{minipage}{0.88\textwidth}
+
+      \kicker{UNA RECTA PARA REALIZAR ESTIMACIONES}
+
+      La relación entre la variable predictora \(X\) y la variable
+      respuesta \(Y\) se representa mediante:
+
+      \vspace{0.0em}
+
+      \[
+        \hat{Y}=\beta_0+\beta_1X
+      \]
+
+      \vspace{0.0em}
+
+      \begin{cerrado}{Componentes del modelo}
+
+        \small
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.15em}
+
+          \item \(X\): valor conocido de la variable predictora.
+
+          \item \(\hat{Y}\): valor de \(Y\) estimado por el modelo.
+
+          \item \(\beta_0\): intercepto o punto de partida de la recta.
+
+          \item \(\beta_1\): pendiente de la recta. Indica cuánto cambia
+          \(\hat{Y}\) cuando \(X\) aumenta una unidad.
+
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.0em}
+
+      \begin{center}
+        \destaca{El modelo utiliza un valor conocido de \(X\)
+        para obtener una estimación \(\hat{Y}\).}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 9 — Valor observado y valor estimado
+% ---------------------------------------------------------------------
+
+\begin{frame}{Valor observado y valor estimado}
+
+  \begin{center}
+    \begin{minipage}{0.88\textwidth}
+
+      \kicker{EL MODELO PRODUCE UNA ESTIMACIÓN}
+
+      Para cada valor de \(X\), distinguimos entre el resultado registrado
+      en los datos y el resultado calculado por el modelo.
+
+      \vspace{0.5em}
+
+      \begin{columns}[T,onlytextwidth]
+
+        \begin{column}{0.46\textwidth}
+
+          \begin{cerrado}{Valor observado \(Y\)}
+
+            Es el valor real registrado en los datos.
+
+            \vspace{0.5em}
+
+            Si la empresa vendió realmente 27 unidades:
+
+            \[
+              Y=27
+            \]
+
+            Este valor proviene directamente de la observación.
+
+          \end{cerrado}
+
+        \end{column}
+
+        \begin{column}{0.46\textwidth}
+
+          \begin{cerrado}{Valor estimado \(\hat{Y}\)}
+
+            Es el valor calculado mediante la ecuación del modelo.
+
+            \vspace{0.5em}
+
+            Si el modelo estimó 25 unidades:
+
+            \[
+              \hat{Y}=25
+            \]
+
+            Este valor constituye una predicción.
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.0em}
+
+      \begin{center}
+        \destaca{\(Y\) proviene de los datos}
+        \qquad
+        \destaca{\(\hat{Y}\) proviene del modelo}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 10 — El residuo
+% ---------------------------------------------------------------------
+
+\begin{frame}{El residuo}
+
+  \begin{center}
+    \begin{minipage}{0.86\textwidth}
+
+      \kicker{DIFERENCIA ENTRE EL VALOR REAL Y LA ESTIMACIÓN}
+
+      El residuo mide cuánto se aleja la predicción del valor
+      realmente observado.
+
+      \vspace{0.4em}
+
+      \[
+        e=Y-\hat{Y}
+      \]
+
+      \vspace{0.25em}
+
+      \begin{cerrado}{Ejemplo}
+
+        Si el valor observado es \(Y=27\) y el modelo estima
+        \(\hat{Y}=25\), entonces:
+
+        \[
+          e=27-25=2
+        \]
+
+        El modelo estimó 2 unidades menos que el valor real.
+
+      \end{cerrado}
+
+      \vspace{0.45em}
+
+      \begin{center}
+        \destaca{El residuo compara el resultado real con la predicción
+        del modelo.}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 11 — Interpretación del residuo
+% ---------------------------------------------------------------------
+
+\begin{frame}{Interpretación del residuo}
+
+  \begin{center}
+    \begin{minipage}{0.86\textwidth}
+
+      \kicker{EL SIGNO INDICA LA DIRECCIÓN DEL ERROR}
+
+      El signo del residuo permite saber si el modelo estimó un valor
+      menor o mayor que el observado.
+
+      \vspace{0.6em}
+
+      \renewcommand{\arraystretch}{1.65}
+
+      \begin{tabular}{@{}p{1.5cm}p{8.2cm}@{}}
+
+        \toprule
+
+        \textbf{Residuo} &
+        \textbf{Interpretación}\\
+
+        \midrule
+
+        \(\boldsymbol{e>0}\) &
+        El modelo estimó un valor menor que el observado.\\
+
+        \(\boldsymbol{e<0}\) &
+        El modelo estimó un valor mayor que el observado.\\
+
+        \(\boldsymbol{e=0}\) &
+        La estimación coincide con el valor observado.\\
+
+        \bottomrule
+
+      \end{tabular}
+
+      \vspace{0.7em}
+
+      \begin{cerrado}{Idea clave}
+
+        Cuanto más cercano a cero sea el residuo, más próxima será
+        la estimación al valor observado.
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 12 — La recta de mejor ajuste
+% ---------------------------------------------------------------------
+
+\begin{frame}{La recta de mejor ajuste}
+
+  \begin{center}
+    \begin{minipage}{0.84\textwidth}
+
+      \kicker{UNA RECTA QUE REDUCE LOS ERRORES}
+
+      Es posible dibujar diferentes rectas sobre los mismos datos,
+      pero cada una produce estimaciones distintas.
+
+      \vspace{0.3em}
+
+      \begin{cerrado}{Criterio de ajuste}
+
+        Para cada observación, el modelo calcula un residuo:
+
+        \[
+          e_i=Y_i-\hat{Y}_i
+        \]
+
+        La regresión lineal selecciona los coeficientes
+        \(\beta_0\) y \(\beta_1\) que minimizan:
+
+        \[
+          \sum_{i=1}^{n}\left(Y_i-\hat{Y}_i\right)^2
+        \]
+
+        \vspace{0.15em}
+
+        \destaca{La mejor recta es la que reduce, en conjunto,
+        las diferencias entre los valores observados y estimados.}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 13 — Coeficiente de determinación
+% ---------------------------------------------------------------------
+
+\begin{frame}{El coeficiente de determinación \(R^2\)}
+
+  \begin{center}
+    \begin{minipage}{0.84\textwidth}
+
+      \kicker{CUÁNTA VARIABILIDAD EXPLICA EL MODELO}
+
+      El coeficiente de determinación mide qué proporción de la
+      variabilidad de \(Y\) explica el modelo de regresión.
+
+      \[
+        R^2
+        =
+        1-
+        \frac{\sum_{i=1}^{n}(Y_i-\hat{Y}_i)^2}
+        {\sum_{i=1}^{n}(Y_i-\bar{Y})^2}
+      \]
+
+      \begin{cerrado}{Interpretación}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.25em}
+
+          \item Un valor cercano a \(1\) indica mayor capacidad explicativa.
+
+          \item Un valor cercano a \(0\) indica que el modelo explica
+          poca variabilidad de la respuesta.
+
+          \item Por ejemplo, \(R^2=0.65\) significa que el modelo explica
+          aproximadamente el \(65\,\%\) de la variabilidad observada.
+
+        \end{itemize}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 14 — Error absoluto medio
+% ---------------------------------------------------------------------
+
+\begin{frame}{El error absoluto medio}
+
+  \begin{center}
+    \begin{minipage}{0.84\textwidth}
+
+      \kicker{EL TAMAÑO PROMEDIO DE LOS ERRORES}
+
+      El error absoluto medio, o MAE, calcula el promedio de las
+      diferencias absolutas entre los valores observados y estimados.
+
+      \[
+        MAE
+        =
+        \frac{1}{n}
+        \sum_{i=1}^{n}
+        |Y_i-\hat{Y}_i|
+      \]
+
+      \begin{cerrado}{Interpretación}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.25em}
+
+          \item Ignora el signo de los residuos.
+
+          \item Se expresa en las mismas unidades de la variable respuesta.
+
+          \item Un MAE menor indica predicciones más cercanas a los
+          valores observados.
+
+        \end{itemize}
+
+        Si \(MAE=2\), las predicciones se alejan de los valores reales
+        aproximadamente 2 unidades, en promedio.
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 15 — MSE y RMSE
+% ---------------------------------------------------------------------
+
+\begin{frame}{Errores cuadráticos: MSE y RMSE}
+
+  \begin{center}
+    \begin{minipage}{0.84\textwidth}
+
+      \kicker{PENALIZAR LOS ERRORES GRANDES}
+
+      El error cuadrático medio eleva cada residuo al cuadrado:
+
+      \[
+        MSE
+        =
+        \frac{1}{n}
+        \sum_{i=1}^{n}
+        (Y_i-\hat{Y}_i)^2
+      \]
+
+      La raíz del error cuadrático medio se obtiene mediante:
+
+      \[
+        RMSE=\sqrt{MSE}
+      \]
+
+      \begin{cerrado}{Diferencia principal}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.2em}
+
+          \item El MSE penaliza con mayor intensidad los errores grandes.
+
+          \item El MSE queda expresado en unidades al cuadrado.
+
+          \item El RMSE vuelve a las unidades originales de \(Y\), por
+          lo que resulta más fácil de interpretar.
+
+        \end{itemize}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% =====================================================================
+\section{Laboratorio 13}
+\modolab{LABORATORIO 13}
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% Diapositiva 13 — Laboratorio de regresión lineal simple
+% ---------------------------------------------------------------------
+
+\begin{frame}{Regresión lineal simple con Python}
+
+  \begin{center}
+    \begin{minipage}{0.86\textwidth}
+
+      \kicker{DE LOS DATOS AL MODELO}
+
+      En este laboratorio construiremos un modelo para estimar las
+      ventas de una empresa a partir de su inversión en publicidad.
+
+      \vspace{0.4em}
+
+      \begin{cerrado}{Pregunta de análisis}
+
+        \begin{center}
+          \pregunta{¿Podemos utilizar la inversión en publicidad
+          para estimar las ventas?}
+        \end{center}
+
+      \end{cerrado}
+
+      \vspace{0.35em}
+
+      \begin{cerrado}{Ruta de trabajo}
+
+        \begin{enumerate}
+          \setlength{\itemsep}{0.2em}
+
+          \item Explorar las variables del conjunto de datos.
+          \item Construir el diagrama de dispersión.
+          \item Ajustar el modelo de regresión lineal.
+          \item Interpretar el intercepto y la pendiente.
+          \item Obtener predicciones y calcular residuos.
+
+        \end{enumerate}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+
+% =====================================================================
+% FIN DEL LABORATORIO 13
+% REGRESO AL MODO TEORÍA
+% =====================================================================
+
+\section{Regresión lineal múltiple}
+\modoteoria
+
+
+% ---------------------------------------------------------------------
+% Diapositiva 18 — ¿Qué es la regresión lineal múltiple?
+% ---------------------------------------------------------------------
+
+\begin{frame}{¿Qué es la regresión lineal múltiple?}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \small
+
+      \kicker{VARIAS VARIABLES PARA ESTIMAR UNA RESPUESTA}
+
+      La \textbf{regresión lineal múltiple} permite estimar una
+      variable respuesta utilizando dos o más variables predictoras.
+
+      \vspace{0.3em}
+
+      Su ecuación general es:
+
+      \vspace{-0.3em}
+
+      \[
+        \hat{Y}
+        =
+        \beta_0
+        + \beta_1X_1
+        + \beta_2X_2
+        + \cdots
+        + \beta_pX_p
+      \]
+
+      \vspace{-0.4em}
+
+      \begin{cerrado}{Componentes del modelo}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.2em}
+
+          \item \(\hat{Y}\): valor estimado de la variable respuesta.
+
+          \item \(\beta_0\): intercepto o valor inicial del modelo.
+
+          \item \(X_1,X_2,\ldots,X_p\): variables predictoras.
+
+          \item \(\beta_1,\beta_2,\ldots,\beta_p\): cambios estimados
+                en \(Y\) asociados con cada variable predictora.
+
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.3em}
+
+      \begin{center}
+        \destaca{Cada coeficiente se interpreta manteniendo constantes
+        las demás variables del modelo.}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+
+
+% ---------------------------------------------------------------------
+% Diapositiva 19 — Modelo de regresión múltiple para las ventas
+% ---------------------------------------------------------------------
+
+\begin{frame}{Modelo de regresión múltiple para las ventas}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \small
+
+      \kicker{TRES VARIABLES PREDICTORAS}
+
+      Utilizaremos las inversiones en televisión, radio y prensa
+      para estimar las ventas:
+
+      \vspace{-0.2em}
+
+      \[
+        \widehat{\text{sales}}
+        =
+        \beta_0
+        + \beta_1(\text{TV})
+        + \beta_2(\text{radio})
+        + \beta_3(\text{newspaper})
+      \]
+
+      \vspace{-0.4em}
+
+      \begin{columns}[T,onlytextwidth]
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Variables predictoras}
+
+            \begin{itemize}
+              \setlength{\itemsep}{0.2em}
+
+              \item \(X_1=\text{TV}\)
+              \item \(X_2=\text{radio}\)
+              \item \(X_3=\text{newspaper}\)
+
+            \end{itemize}
+
+          \end{cerrado}
+
+        \end{column}
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Variable respuesta}
+
+            \[
+              Y=\text{sales}
+            \]
+
+            Ventas del producto expresadas en miles de unidades.
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.35em}
+
+      \begin{center}
+        \destaca{El modelo estimará la contribución de cada medio
+        publicitario manteniendo constantes los demás.}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 20 — Interpretación de los coeficientes
+% ---------------------------------------------------------------------
+
+\begin{frame}{Interpretación de los coeficientes}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \small
+
+      \kicker{EL APORTE ESTIMADO DE CADA VARIABLE}
+
+      En el modelo:
+
+      \vspace{-0.3em}
+
+      \[
+        \widehat{\text{sales}}
+        =
+        \beta_0
+        + \beta_1(\text{TV})
+        + \beta_2(\text{radio})
+        + \beta_3(\text{newspaper})
+      \]
+
+      \vspace{-0.4em}
+
+      \begin{cerrado}{Interpretación}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.3em}
+
+          \item \(\beta_0\): ventas estimadas cuando las inversiones
+                en los tres medios son iguales a cero.
+
+          \item \(\beta_1\): cambio estimado en las ventas por cada
+                unidad adicional invertida en televisión.
+
+          \item \(\beta_2\): cambio estimado en las ventas por cada
+                unidad adicional invertida en radio.
+
+          \item \(\beta_3\): cambio estimado en las ventas por cada
+                unidad adicional invertida en prensa.
+
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.3em}
+
+      \begin{center}
+        \destaca{Cada cambio se interpreta manteniendo constantes
+        las inversiones en los otros medios.}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Diapositiva 21 — Regresión simple y regresión múltiple
+% ---------------------------------------------------------------------
+
+\begin{frame}{Regresión simple y regresión múltiple}
+
+  \begin{center}
+    \begin{minipage}{0.90\textwidth}
+
+      \small
+
+      \kicker{DOS MODELOS, DIFERENTE CANTIDAD DE INFORMACIÓN}
+
+      \begin{columns}[T,onlytextwidth]
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Regresión lineal simple}
+
+            Utiliza una variable predictora:
+
+            \[
+              \hat{Y}=\beta_0+\beta_1X
+            \]
+
+            En nuestro caso:
+
+            \[
+              \widehat{\text{sales}}
+              =
+              \beta_0+\beta_1(\text{TV})
+            \]
+
+          \end{cerrado}
+
+        \end{column}
+
+        \begin{column}{0.47\textwidth}
+
+          \begin{cerrado}{Regresión lineal múltiple}
+
+            Utiliza dos o más variables predictoras:
+
+            \[
+              \hat{Y}
+              =
+              \beta_0+\sum_{j=1}^{p}\beta_jX_j
+            \]
+
+            En nuestro caso utilizaremos:
+
+            \[
+              \text{TV},\quad
+              \text{radio},\quad
+              \text{newspaper}
+            \]
+
+          \end{cerrado}
+
+        \end{column}
+
+      \end{columns}
+
+      \vspace{0.0em}
+
+      \begin{center}
+        \destaca{Un modelo con más variables puede explicar mejor
+        las ventas, pero debemos comprobarlo mediante las métricas.}
+      \end{center}
+
+      \vspace{0.0em}
+
+      \begin{center}
+        \pregunta{¿Mejorarán el \(R^2\), el MAE y el RMSE
+        al incorporar las tres inversiones publicitarias?}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% =====================================================================
+\section{Laboratorio 14}
+\modolab{LABORATORIO 14}
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% Diapositiva 22 — Laboratorio de regresión lineal múltiple
+% ---------------------------------------------------------------------
+
+\begin{frame}{Regresión lineal múltiple con Python}
+
+  \begin{center}
+    \begin{minipage}{0.86\textwidth}
+
+      \small
+
+      \kicker{INCORPORAR MÁS INFORMACIÓN AL MODELO}
+
+      En este laboratorio utilizaremos las inversiones en televisión,
+      radio y prensa para estimar las ventas.
+
+      \vspace{0.35em}
+
+      \begin{cerrado}{Pregunta de análisis}
+
+        \begin{center}
+          \pregunta{¿Mejora la estimación de las ventas cuando
+          utilizamos los tres medios publicitarios?}
+        \end{center}
+
+      \end{cerrado}
+
+      \vspace{0.3em}
+
+      \begin{cerrado}{Ruta de trabajo}
+
+        \begin{enumerate}
+          \setlength{\itemsep}{0.15em}
+
+          \item Definir las tres variables predictoras.
+          \item Dividir los datos en entrenamiento y prueba.
+          \item Ajustar el modelo de regresión múltiple.
+          \item Interpretar los coeficientes obtenidos.
+          \item Evaluar y comparar los dos modelos.
+
+        \end{enumerate}
+
+      \end{cerrado}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+% ---------------------------------------------------------------------
+% Cierre — Del concepto a la práctica
+% ---------------------------------------------------------------------
+
+\begin{frame}{Del concepto a la práctica}
+
+  \begin{center}
+    \begin{minipage}{0.86\textwidth}
+
+      \kicker{LABORATORIO 13}
+
+      En el notebook construiremos y evaluaremos diferentes modelos
+      para estimar las ventas:
+
+      \vspace{0.35em}
+
+      \begin{cerrado}{Modelos que compararemos}
+
+        \begin{itemize}
+          \setlength{\itemsep}{0.25em}
+
+          \item Modelo simple: \(\text{TV}\).
+          \item Modelo múltiple completo:
+                \(\text{TV}+\text{radio}+\text{newspaper}\).
+          \item Modelo múltiple reducido:
+                \(\text{TV}+\text{radio}\).
+
+        \end{itemize}
+
+      \end{cerrado}
+
+      \vspace{0.35em}
+
+      \begin{center}
+        \pregunta{¿Cuál modelo ofrece el mejor equilibrio entre
+        desempeño predictivo y simplicidad?}
+      \end{center}
+
+    \end{minipage}
+  \end{center}
+
+\end{frame}
+\end{document}
